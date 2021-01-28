@@ -16,6 +16,7 @@ Notes:
 
 phenix.python ensem_water_rmsf.py ensem.pdb O csv > outfile.csv
 phenix.python ensem_water_rmsf.py ensem.pdb O pml max_rmsf > outfile.pml
+
 ##Conditions to run:
 
 ###Software requirements:

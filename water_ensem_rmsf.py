@@ -17,8 +17,8 @@ for targ_atom_name in targ_atom_names_str.split(","):
   targ_atom_names.append(targ_atom_name)
 print >> sys.stderr, "Calculating RMSF using these atoms:", " ".join(targ_atom_names)
 
-assert sys.argv[3] in ['csv', 'pml']
-output = sys.argv[3]
+#assert sys.argv[3] in ['csv', 'pml']
+#output = sys.argv[3]
 
 added_atoms = {} # (model id, atom xyz) --> (model id, atom xyz) FOR BOOKKEEPING!
 xyzs = {} # (model id, atom xyz) --> list of xyzs in each 3*3*3A box
@@ -77,31 +77,31 @@ for element in summed_distances:
   summed_distances[element] = math.sqrt(summed_distances[element])     #take the root to get the rmsf
 
 max_rmsf = max(summed_distances.values())
-if len(sys.argv) > 4:
-  max_rmsf = float(sys.argv[4])
+if len(sys.argv) > 3:
+  max_rmsf = float(sys.argv[3])
 
-
+#output
 file_basename = os.path.basename(file_name).split('.pdb')[0]
-if output == 'csv':
-  print 'dataset,model_id,atom_count,mean_atomic_coordinates,rmsf'
+file_1 = open('%s_water_rmsfs.csv' % file_basename, 'w')
+file_2 = open('%s_water_rmsfs.pml' % file_basename, 'w')
+
+print('dataset,model_id,atom_count,mean_atomic_coordinates,rmsf', file=file_1)
 
 for element in sorted(summed_distances):
-	
   rmsf = summed_distances[element]
-  if output == 'csv':
-    print '%s,%s,%s,%s,%.4f' % \
-      (file_basename, element[0], atom_count[element], mean_xyz[element], rmsf)
+  print ('%s,%s,%s,%s,%.4f' % (file_basename, element[0], atom_count[element], mean_xyz[element], rmsf), file=file_1)
+  bfactor = rmsf ** 2
+  maxbfactor = max_rmsf ** 2
+  meanx = mean_xyz[element][0]
+  meany = mean_xyz[element][1]
+  meanz = mean_xyz[element][2]
 
-  elif output == 'pml':
-    bfactor = rmsf ** 2
-    maxbfactor = max_rmsf ** 2
-    meanx = mean_xyz[element][0]
-    meany = mean_xyz[element][1]
-    meanz = mean_xyz[element][2]
-    #scaled_rmsf = (rmsf / max_rmsf) * 100
-    scaled_bfactor = (bfactor / maxbfactor) * 100
-    print 'pseudoatom water, chain=ZZ, state=-1, atoms_in_site= %d, b=%.3f, pos=[%.4f,%.4f,%.4f]' % \
-      (atom_count[element], scaled_bfactor, meanx, meany, meanz)
-
+  #scaled_rmsf = (rmsf / max_rmsf) * 100
+  scaled_bfactor = (bfactor / maxbfactor) * 100
+  print ('pseudoatom %s_water, chain=ZZ, state=-1, atoms_in_site= %d, b=%.3f, pos=[%.4f,%.4f,%.4f]' % \
+    (file_basename, atom_count[element], scaled_bfactor, meanx, meany, meanz), file=file_2)
+  
+file_1.close()
+file_2.close()
 
 
